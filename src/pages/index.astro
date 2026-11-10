@@ -1,0 +1,56 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { getProjects } from "../data/projects";
+import { site } from "../data/site";
+
+const projects = await getProjects();
+const featured = projects.filter((project) => project.data.featured);
+// Show featured projects first; fall back to the newest ones if none are marked.
+const shown = (featured.length > 0 ? featured : projects).slice(0, 3);
+---
+
+<BaseLayout>
+  <section class="hero hero--split">
+    <div class="hero-anim">
+      {site.availability && (
+        <p class="status"><span class="status__dot" aria-hidden="true"></span>{site.availability}</p>
+      )}
+      <p class="eyebrow">{site.role}</p>
+      <h1>Hi, I'm <span class="highlight">{site.name}</span>.</h1>
+      <p class="lead">{site.tagline}</p>
+      <div class="hero-actions">
+        <a class="button button--primary" href="/projects">View projects</a>
+        <a class="button button--secondary" href="/contact">Get in touch</a>
+      </div>
+    </div>
+    <Image class="hero__photo" src={site.avatar} alt={`Photo of ${site.name}`} width={320} height={320} loading="eager" />
+  </section>
+
+  <section class="section" aria-labelledby="featured-heading">
+    <div class="section-header" data-reveal>
+      <h2 id="featured-heading">Featured projects</h2>
+      <a class="link-arrow" href="/projects">
+        All projects
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </a>
+    </div>
+    <div class="grid grid--featured">
+      {shown.map((project, index) => <ProjectCard project={project} delay={index * 90} wide={index === 0} />)}
+    </div>
+  </section>
+
+  {site.bio.length > 0 && (
+    <section class="section" aria-labelledby="about-heading" data-reveal>
+      <div class="section-header">
+        <h2 id="about-heading">About me</h2>
+        <a class="link-arrow" href="/about">
+          More about me
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+      </div>
+      <p class="lead">{site.bio[0]}</p>
+    </section>
+  )}
+</BaseLayout>

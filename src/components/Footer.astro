@@ -1,0 +1,21 @@
+---
+import ExternalLink from "./ExternalLink.astro";
+import { site } from "../data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <p>© <span data-year>{year}</span> {site.name}. Built with Astro.</p>
+    {site.socials.length > 0 && (
+      <ul aria-label="Social links">
+        {site.socials.map((link) => (
+          <li>
+            <ExternalLink href={link.url} rel="me noopener">{link.label}</ExternalLink>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</footer>

@@ -1,0 +1,66 @@
+---
+import type { InferGetStaticPropsType } from "astro";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ExternalLink from "../../components/ExternalLink.astro";
+import { getProjects } from "../../data/projects";
+
+// One page is generated for every file in src/content/projects/.
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { project } = Astro.props;
+const { title, description, date, endDate, ongoing, client, tags, repo, live, cover, coverAlt } = project.data;
+const { Content } = await render(project);
+// Front matter dates are parsed as UTC midnight; format them in UTC so the
+// month never shifts depending on where the site is built.
+const formatDate = (value: Date) => value.toLocaleDateString("en-US", { year: "numeric", month: "long", timeZone: "UTC" });
+const periodEnd = ongoing ? " – Present" : endDate ? ` – ${formatDate(endDate)}` : "";
+---
+
+<BaseLayout title={title} description={description}>
+  <a class="back-link" href="/projects">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+    All projects
+  </a>
+
+  <article>
+    <header class="hero hero-anim">
+      <h1>{title}</h1>
+      <p class="lead">{description}</p>
+      <div class="project-meta">
+        <span class="muted"><time datetime={date.toISOString()}>{formatDate(date)}</time>{periodEnd}</span>
+        {client && <span class="muted">For {client}</span>}
+        {tags.length > 0 && (
+          <ul class="tags" aria-label="Technologies">
+            {tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        )}
+      </div>
+      {(repo || live) && (
+        <div class="project-links">
+          {live && <ExternalLink class="button button--primary" href={live}>Live site</ExternalLink>}
+          {repo && <ExternalLink class="button button--secondary" href={repo}>Source code</ExternalLink>}
+        </div>
+      )}
+    </header>
+
+    {cover && (
+      <figure class="project-cover" style={`view-transition-name: cover-${project.id}`}>
+        <Image src={cover} alt={coverAlt ?? `Screenshot of ${title}`} width={1200} loading="eager" />
+      </figure>
+    )}
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

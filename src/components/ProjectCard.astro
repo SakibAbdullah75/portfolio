@@ -1,0 +1,48 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  /** Delay in milliseconds before this card's reveal animation, for staggering. */
+  delay?: number;
+  /** Wide horizontal layout, used for the first featured card on the home page. */
+  wide?: boolean;
+}
+
+const { project, delay = 0, wide = false } = Astro.props;
+const { title, description, tags, cover, coverAlt } = project.data;
+// Shared name lets the thumbnail morph into the cover image on the project page.
+const transitionName = `view-transition-name: cover-${project.id}`;
+// Placeholder tile for projects without a screenshot: up to two initials on a
+// tint derived from the id, so neighbouring tiles do not all look the same.
+const initials = title.split(/\s+/).slice(0, 2).map((word) => word.charAt(0)).join("").toUpperCase();
+const hue = [...project.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 360;
+---
+
+<article class:list={["card", { "card--wide": wide }]} data-reveal style={`--reveal-delay: ${delay}ms`}>
+  {cover ? (
+    <div class="card__media" style={transitionName}>
+      <Image src={cover} alt={coverAlt ?? ""} width={wide ? 1000 : 640} height={wide ? 625 : 400} />
+    </div>
+  ) : (
+    <div class="card__media card__media--placeholder" aria-hidden="true" style={`${transitionName}; --tint: ${hue}`}>
+      <span>{initials}</span>
+    </div>
+  )}
+  <div class="card__body">
+    <h3><a href={`/projects/${project.id}`}>{title}</a></h3>
+    <p>{description}</p>
+    <div class="card__footer">
+      {tags.length > 0 && (
+        <ul class="tags" aria-label="Technologies">
+          {tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+      <span class="card__cta" aria-hidden="true">
+        View project
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </span>
+    </div>
+  </div>
+</article>

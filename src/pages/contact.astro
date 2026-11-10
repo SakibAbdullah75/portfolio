@@ -1,0 +1,122 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ExternalLink from "../components/ExternalLink.astro";
+import { site } from "../data/site";
+
+// Show "github.com/name" instead of the full URL.
+const prettyUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+const { contact } = site;
+const email = site.email.trim();
+const hasEmail = email.length > 0;
+const hasForm = contact.formAccessKey.trim().length > 0;
+const lead =
+  hasEmail || hasForm
+    ? "Whether you have a project in mind, a question, or just want to say hello, my inbox is open."
+    : "Whether you have a project in mind, a question, or just want to say hello, you can reach me through the links below.";
+const hasFacts =
+  Boolean(site.availability) || Boolean(contact.responseTime) || Boolean(contact.location) || contact.openTo.length > 0;
+---
+
+<BaseLayout title="Contact" description={`Get in touch with ${site.name}.`}>
+  <div class="contact-grid">
+    <section class="hero hero-anim">
+      <h1>Get in touch</h1>
+      <p class="lead">{lead}</p>
+      <ul class="contact-list">
+        {hasEmail && (
+          <li class="contact-row">
+            <a href={`mailto:${email}`}>Email <span>{email}</span></a>
+            <button class="copy-button" type="button" data-copy={email} aria-label="Copy email address">
+              Copy
+            </button>
+          </li>
+        )}
+        {site.socials.map((link) => (
+          <li class="contact-row">
+            <ExternalLink href={link.url} rel="me noopener">
+              {link.label}
+              <span>{prettyUrl(link.url)}</span>
+            </ExternalLink>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    {(hasForm || hasFacts) && (
+      <aside class="contact-aside hero-anim">
+        {hasForm && (
+          <section class="panel" aria-labelledby="form-heading">
+            <h2 id="form-heading">Send a message</h2>
+            <form class="contact-form" action="https://api.web3forms.com/submit" method="POST">
+              <input type="hidden" name="access_key" value={contact.formAccessKey} />
+              <input type="hidden" name="subject" value={`New message from ${site.name}'s portfolio`} />
+              <input type="checkbox" name="botcheck" class="honeypot" tabindex="-1" autocomplete="off" />
+              <div class="field">
+                <label for="contact-name">Name</label>
+                <input id="contact-name" name="name" type="text" required autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="contact-email">Email</label>
+                <input id="contact-email" name="email" type="email" required autocomplete="email" />
+              </div>
+              <div class="field">
+                <label for="contact-message">Message</label>
+                <textarea id="contact-message" name="message" required></textarea>
+              </div>
+              <button class="button button--primary" type="submit">Send message</button>
+            </form>
+          </section>
+        )}
+        {hasFacts && (
+          <section class="panel" aria-labelledby="facts-heading">
+            <h2 id="facts-heading">Good to know</h2>
+            <dl class="facts">
+              {site.availability && (
+                <div>
+                  <dt>Availability</dt>
+                  <dd>{site.availability}</dd>
+                </div>
+              )}
+              {contact.responseTime && (
+                <div>
+                  <dt>Response time</dt>
+                  <dd>{contact.responseTime}</dd>
+                </div>
+              )}
+              {contact.location && (
+                <div>
+                  <dt>Location</dt>
+                  <dd>{contact.location}</dd>
+                </div>
+              )}
+              {contact.openTo.length > 0 && (
+                <div>
+                  <dt>Open to</dt>
+                  <dd>{contact.openTo.join(", ")}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
+      </aside>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  // Copy the email address to the clipboard and confirm briefly.
+  const button = document.querySelector<HTMLButtonElement>("[data-copy]");
+  button?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(button.dataset.copy ?? "");
+      button.textContent = "Copied";
+      button.classList.add("is-done");
+      setTimeout(() => {
+        button.textContent = "Copy";
+        button.classList.remove("is-done");
+      }, 2000);
+    } catch {
+      // Clipboard access can be refused; the mailto link still works.
+    }
+  });
+</script>

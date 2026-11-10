@@ -1,0 +1,65 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site";
+---
+
+<BaseLayout title="About" description={`About ${site.name}, ${site.role}.`}>
+  <section class="hero hero--split">
+    <div class="hero-anim">
+      <h1>About me</h1>
+      {site.bio.map((paragraph) => <p class="lead">{paragraph}</p>)}
+    </div>
+    <Image class="hero__photo" src={site.avatar} alt={`Photo of ${site.name}`} width={320} height={320} loading="eager" />
+  </section>
+
+  {site.skills.length > 0 && (
+    <section class="section" aria-labelledby="skills-heading">
+      <h2 id="skills-heading" data-reveal>Skills</h2>
+      <ul class="pill-list">
+        {site.skills.map((skill, index) => (
+          <li data-reveal style={`--reveal-delay: ${index * 40}ms`}>{skill}</li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {site.experience.length > 0 && (
+    <section class="section" aria-labelledby="experience-heading">
+      <h2 id="experience-heading" data-reveal>Experience</h2>
+      <ol class="timeline">
+        {site.experience.map((job, index) => (
+          <li data-reveal style={`--reveal-delay: ${index * 90}ms`}>
+            <span class="period">{job.period}</span>
+            <div>
+              <h3>{job.role} · {job.company}</h3>
+              <p>{job.summary}</p>
+              {job.highlights && job.highlights.length > 0 && (
+                <ul class="timeline__highlights">
+                  {job.highlights.map((item) => <li>{item}</li>)}
+                </ul>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )}
+
+  {site.education.length > 0 && (
+    <section class="section" aria-labelledby="education-heading">
+      <h2 id="education-heading" data-reveal>Education</h2>
+      <ol class="timeline">
+        {site.education.map((item, index) => (
+          <li data-reveal style={`--reveal-delay: ${index * 90}ms`}>
+            <span class="period">{item.period}</span>
+            <div>
+              <h3>{item.degree}</h3>
+              <p>{item.school}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )}
+</BaseLayout>
